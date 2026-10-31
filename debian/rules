@@ -1,0 +1,27 @@
+#! /usr/bin/make -f
+# Repack the upstream release binary. The version in debian/changelog names
+# the release to fetch; debian/upstream-sha256 holds its checksum, so a bump
+# is one commit touching those two files.
+include /usr/share/dpkg/pkg-info.mk
+
+TARBALL = vale_$(DEB_VERSION_UPSTREAM)_Linux_64-bit.tar.gz
+URL = https://github.com/vale-cli/vale/releases/download/v$(DEB_VERSION_UPSTREAM)/$(TARBALL)
+
+%:
+	dh $@
+
+override_dh_auto_build:
+	curl -fsSL -o $(TARBALL) $(URL)
+	grep ' $(TARBALL)$$' debian/upstream-sha256 | sha256sum -c -
+	tar -xzf $(TARBALL) vale
+
+override_dh_auto_install:
+	install -D -m 0755 vale debian/vale/usr/bin/vale
+
+override_dh_auto_clean:
+	rm -f vale vale_*_Linux_64-bit.tar.gz
+
+# Ship the binary as upstream released it: it is a static Go build whose
+# DWARF the strip and dwz passes mangle without making the package smaller
+# in any way that matters.
+override_dh_strip override_dh_dwz:

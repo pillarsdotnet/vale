@@ -1,0 +1,27 @@
+Source: vale
+Section: text
+Priority: optional
+Maintainer: Robert August Vincent II (Bob) <pillarsdotnet@gmail.com>
+Build-Depends:
+ ca-certificates,
+ curl,
+ debhelper-compat (= 13),
+Standards-Version: 4.7.0
+Rules-Requires-Root: no
+Homepage: https://vale.sh
+
+Package: vale
+Architecture: amd64
+Depends:
+ ${misc:Depends},
+Description: syntax-aware linter for prose
+ Vale checks prose against style rules: packaged guides such as Microsoft's
+ and Google's, or a project's own rules in .vale.ini and a styles directory.
+ It understands Markdown, reStructuredText, AsciiDoc, HTML, and the comments
+ and docstrings of most programming languages, so code stays out of the way
+ of the prose checks.
+ .
+ This package repacks the upstream release binary, a static Go build: no
+ Ubuntu or Debian archive carries vale, and upstream publishes tarballs
+ only. debian/rules downloads the release named in debian/changelog and
+ checks it against the sha256 recorded in debian/upstream-sha256.
