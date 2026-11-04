@@ -6,6 +6,7 @@ Build-Depends:
  ca-certificates,
  curl,
  debhelper-compat (= 13),
+ help2man,
 Standards-Version: 4.7.0
 Rules-Requires-Root: no
 Homepage: https://vale.sh

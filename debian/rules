@@ -14,12 +14,16 @@ override_dh_auto_build:
 	curl -fsSL -o $(TARBALL) $(URL)
 	grep ' $(TARBALL)$$' debian/upstream-sha256 | sha256sum -c -
 	tar -xzf $(TARBALL) vale
+# Upstream ships no manual page; the version is passed explicitly so the
+# page's title does not depend on the wording of "vale --version".
+	help2man --no-info --name 'syntax-aware linter for prose' \
+		--version-string '$(DEB_VERSION_UPSTREAM)' ./vale > debian/vale.1
 
 override_dh_auto_install:
 	install -D -m 0755 vale debian/vale/usr/bin/vale
 
 override_dh_auto_clean:
-	rm -f vale vale_*_Linux_64-bit.tar.gz
+	rm -f vale vale_*_Linux_64-bit.tar.gz debian/vale.1
 
 # Ship the binary as upstream released it: it is a static Go build whose
 # DWARF the strip and dwz passes mangle without making the package smaller

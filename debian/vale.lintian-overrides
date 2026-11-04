@@ -1,0 +1,9 @@
+# Upstream's Linux release is shipped exactly as released, so its hardening
+# flags and its linked libraries are upstream's build's, not this package's.
+# See debian/rules and README.md.
+vale: hardening-no-pie [usr/bin/vale]
+vale: undeclared-elf-prerequisites
+
+# Not an upload to Debian: this package lives in a private Forgejo registry
+# and tracks upstream releases, so no bug is ever closed by its first entry.
+vale: initial-upload-closes-no-bugs

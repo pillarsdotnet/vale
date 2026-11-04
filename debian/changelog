@@ -1,6 +1,8 @@
-vale (3.25.1-1) UNRELEASED; urgency=medium
+vale (3.26.0-1) UNRELEASED; urgency=medium
 
-  * Repack the upstream 3.25.1 release binary. The series version suffix is
+  * Repack the upstream 3.26.0 release binary. The series version suffix is
     added at build time by .forgejo/registry-upload and never committed.
+  * No advisories either way: trivy reports none against the Go modules
+    built into 3.25.1, and none against 3.26.0.
 
- -- Robert August Vincent II (Bob) <pillarsdotnet@gmail.com>  Fri, 30 Oct 2026 18:00:00 -0400
+ -- Robert August Vincent II (Bob) <pillarsdotnet@gmail.com>  Wed, 04 Nov 2026 10:36:00 -0500

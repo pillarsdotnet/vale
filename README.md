@@ -21,7 +21,7 @@ and installs it as `/usr/bin/vale`.
 One commit, two files:
 
 ```sh
-v=3.26.0   # the new upstream version
+v=3.26.1   # the new upstream version
 curl -fsSL "https://github.com/vale-cli/vale/releases/download/v$v/vale_${v}_checksums.txt" |
   grep Linux_64 > debian/upstream-sha256
 dch -v "$v-1" -D UNRELEASED "Repack the upstream $v release binary."
