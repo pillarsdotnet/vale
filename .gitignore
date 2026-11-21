@@ -1,8 +1,10 @@
 /vale
-/vale_*_Linux_64-bit.tar.gz
 /debian/vale.1
 /debian/.debhelper/
 /debian/debhelper-build-stamp
 /debian/files
 /debian/vale/
 /debian/vale.substvars
+/build-src/
+/debian/.gocache/
+/debian/.gobuild/

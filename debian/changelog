@@ -1,8 +1,28 @@
-vale (3.26.0-1) UNRELEASED; urgency=medium
+vale (3.28.1-1) UNRELEASED; urgency=medium
 
-  * Repack the upstream 3.26.0 release binary. The series version suffix is
-    added at build time by .forgejo/registry-upload and never committed.
-  * No advisories either way: trivy reports none against the Go modules
-    built into 3.25.1, and none against 3.26.0.
+  * Build from upstream's source at the 3.28.1 tag, rather than repacking the
+    release binary. The series version suffix is added at build time by
+    .forgejo/registry-upload and never committed.
+  * 3.26.0, which this package carried since 4 November, has aged badly:
+    trivy now reports 58 advisories against the Go modules built into it, 23
+    of them high, nearly all in the standard library of Go 1.25.7. That is
+    what a pinned release binary does over three weeks -- the binary did not
+    change, the advisory database did.
+  * 3.28.1 as released scans with two: GO-2026-5932, because upstream builds
+    against x/crypto 0.58.0, which still ships the unmaintained openpgp
+    package; and CVE-2026-97054, because it is built with Go 1.27.3. Neither
+    can be remediated by repacking.
+  * So the build now pins what upstream could not: Go 1.27.4 through
+    GOTOOLCHAIN, x/crypto 0.59.0 (which removed openpgp) and x/net 0.63.0.
+    The result scans with no findings at any severity.
+  * debian/upstream-sha256 is replaced by debian/upstream-commit, since
+    there is no longer a tarball to checksum: the build clones the release
+    tag and refuses to continue unless HEAD is the recorded commit.
+  * Upstream's URL moved from errata-ai/vale to vale-cli/vale; debian/rules
+    already followed it, and debian/upstream-commit now names it too.
+  * The lintian overrides change with the linkage: upstream's Linux release
+    was dynamically linked through 3.26.0 and is a static build from 3.28.1,
+    so hardening-no-pie and undeclared-elf-prerequisites give way to
+    statically-linked-binary.
 
- -- Robert August Vincent II (Bob) <pillarsdotnet@gmail.com>  Wed, 04 Nov 2026 10:36:00 -0500
+ -- Robert August Vincent II (Bob) <pillarsdotnet@gmail.com>  Fri, 20 Nov 2026 21:40:00 -0500

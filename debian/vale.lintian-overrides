@@ -1,8 +1,9 @@
-# Upstream's Linux release is shipped exactly as released, so its hardening
-# flags and its linked libraries are upstream's build's, not this package's.
-# See debian/rules and README.md.
-vale: hardening-no-pie [usr/bin/vale]
-vale: undeclared-elf-prerequisites
+# A static Go build, which is how Go programs are built; there is no shared
+# library here to link against. Upstream's own Linux release became a static
+# build in 3.28.1 -- 3.26.0 was dynamically linked, which is what the
+# hardening-no-pie and undeclared-elf-prerequisites overrides here used to be
+# for. See debian/rules and README.md.
+vale: statically-linked-binary [usr/bin/vale]
 
 # Not an upload to Debian: this package lives in a private Forgejo registry
 # and tracks upstream releases, so no bug is ever closed by its first entry.

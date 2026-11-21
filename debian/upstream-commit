@@ -1,0 +1,7 @@
+# The upstream commit that debian/changelog's version tag points at. The
+# build clones that tag and refuses to go on unless HEAD matches this, so a
+# retagged or moved release cannot slip in unnoticed.
+#
+# Read it from the tag:
+#   git ls-remote https://github.com/vale-cli/vale.git refs/tags/v<version>^{}
+58f0dbfbce70bb23008a55ae64427858f788ef2e

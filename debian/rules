@@ -1,31 +1,79 @@
 #! /usr/bin/make -f
-# Repack the upstream release binary. The version in debian/changelog names
-# the release to fetch; debian/upstream-sha256 holds its checksum, so a bump
-# is one commit touching those two files.
+# Build vale from upstream's source rather than repacking the release binary.
+#
+# Repacking was simpler, and it is what this package did until 3.28.1. The
+# reason it stopped: a release binary carries the Go toolchain and module set
+# upstream happened to build with, and those accumulate advisories at their
+# own pace. vale 3.26.0 as released now scans with 58 findings, 23 of them
+# high; 3.28.1 as released scans with two. No amount of repacking clears
+# them -- only a rebuild does. See debian/changelog and README.md.
+#
+# Three things are pinned here, and all three are the point of the file:
+#   * the upstream tag (debian/changelog) and the commit it must resolve to
+#     (debian/upstream-commit);
+#   * the Go toolchain, through GOTOOLCHAIN, which the distribution's own go
+#     downloads and verifies against the checksum database;
+#   * the two modules whose released versions carry advisories.
 include /usr/share/dpkg/pkg-info.mk
 
-TARBALL = vale_$(DEB_VERSION_UPSTREAM)_Linux_64-bit.tar.gz
-URL = https://github.com/vale-cli/vale/releases/download/v$(DEB_VERSION_UPSTREAM)/$(TARBALL)
+V = $(DEB_VERSION_UPSTREAM)
+UPSTREAM_GIT = https://github.com/vale-cli/vale.git
+UPSTREAM_COMMIT = $(shell grep -v '^#' debian/upstream-commit | tr -d '[:space:]')
+SRC = $(CURDIR)/build-src
+
+# Go 1.27.3, which upstream built 3.28.1 with, carries CVE-2026-97054 in
+# net/http (MaxBytesReader leaves the connection in a bad state). 1.27.4 is
+# the fix.
+GOTOOLCHAIN = go1.27.4
+
+# x/crypto through 0.58.0 still ships golang.org/x/crypto/openpgp, which
+# GO-2026-5932 flags as unmaintained and unsafe by design; 0.59.0 removed it.
+# x/net 0.61.0 is what 3.28.1 pins; 0.63.0 is current and carries nothing.
+GO_MODULE_PINS = golang.org/x/crypto@v0.59.0 golang.org/x/net@v0.63.0
+
+# The module and build caches live under debian/ so that a build leaves the
+# tree as it found it; see override_dh_auto_clean.
+export GOPATH = $(CURDIR)/debian/.gocache
+export GOCACHE = $(CURDIR)/debian/.gobuild
+export GOFLAGS = -mod=mod
+export GOTOOLCHAIN
+# Upstream's .goreleaser.yml sets CGO_ENABLED=0 for every target, so this is
+# what the release binary is too: a pure Go build with no tree-sitter.
+export CGO_ENABLED = 0
+
+# main.version without a leading "v": goreleaser passes {{.Version}}, so
+# "vale --version" on an upstream build prints "vale version 3.28.1", and
+# this package should not change that.
+LDFLAGS = -s -w -X main.version=$(V)
 
 %:
 	dh $@
 
 override_dh_auto_build:
-	curl -fsSL -o $(TARBALL) $(URL)
-	grep ' $(TARBALL)$$' debian/upstream-sha256 | sha256sum -c -
-	tar -xzf $(TARBALL) vale
+	rm -rf -- $(SRC)
+	git clone --quiet --depth 1 --branch v$(V) $(UPSTREAM_GIT) $(SRC)
+	cd $(SRC) && test "$$(git rev-parse HEAD)" = "$(UPSTREAM_COMMIT)" \
+	  || { echo "v$(V) is not $(UPSTREAM_COMMIT); see debian/upstream-commit" >&2; exit 1; }
+	cd $(SRC) && go get $(GO_MODULE_PINS) && go mod tidy
+	cd $(SRC) && go build -trimpath -ldflags '$(LDFLAGS)' -o $(CURDIR)/vale ./cmd/vale
 # Upstream ships no manual page; the version is passed explicitly so the
 # page's title does not depend on the wording of "vale --version".
 	help2man --no-info --name 'syntax-aware linter for prose' \
-		--version-string '$(DEB_VERSION_UPSTREAM)' ./vale > debian/vale.1
+		--version-string '$(V)' ./vale > debian/vale.1
+
+# Upstream's test suite drives the CLI against testdata and is not what this
+# package is verifying; the build proving the pinned module set still
+# compiles is.
+override_dh_auto_test:
 
 override_dh_auto_install:
 	install -D -m 0755 vale debian/vale/usr/bin/vale
 
 override_dh_auto_clean:
-	rm -f vale vale_*_Linux_64-bit.tar.gz debian/vale.1
+	rm -f vale debian/vale.1
+	chmod -R u+w debian/.gocache debian/.gobuild 2>/dev/null || true
+	rm -rf -- $(SRC) debian/.gocache debian/.gobuild
 
-# Ship the binary as upstream released it: it is a static Go build whose
-# DWARF the strip and dwz passes mangle without making the package smaller
-# in any way that matters.
+# Ship the binary as built: a static Go build whose DWARF the strip and dwz
+# passes mangle without making the package smaller in any way that matters.
 override_dh_strip override_dh_dwz:

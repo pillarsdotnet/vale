@@ -4,8 +4,9 @@ Priority: optional
 Maintainer: Robert August Vincent II (Bob) <pillarsdotnet@gmail.com>
 Build-Depends:
  ca-certificates,
- curl,
  debhelper-compat (= 13),
+ git,
+ golang-go (>= 2:1.22~),
  help2man,
 Standards-Version: 4.7.0
 Rules-Requires-Root: no
@@ -22,7 +23,11 @@ Description: syntax-aware linter for prose
  and docstrings of most programming languages, so code stays out of the way
  of the prose checks.
  .
- This package repacks the upstream release binary, a static Go build: no
- Ubuntu or Debian archive carries vale, and upstream publishes tarballs
- only. debian/rules downloads the release named in debian/changelog and
- checks it against the sha256 recorded in debian/upstream-sha256.
+ No Ubuntu or Debian archive carries vale and upstream publishes tarballs
+ only, so this package builds it. debian/rules clones the release tag
+ that debian/changelog names, checks the commit against
+ debian/upstream-commit, bumps the two modules whose released versions
+ carry advisories, and builds a static binary with a pinned Go toolchain.
+ The upstream release binary is not repacked: it carries whatever
+ toolchain and module set upstream happened to build with, and those
+ accumulate advisories that only a rebuild clears.
