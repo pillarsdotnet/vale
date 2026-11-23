@@ -27,12 +27,12 @@ built it happened to have, and `trivy` reads both out of the binary. So the
 advisory count against a pinned release only ever goes up, without the
 binary changing at all:
 
-| binary | findings |
-| --- | --- |
-| 3.26.0 as released, scanned 4 November | 0 |
+| binary                                  | findings            |
+| --------------------------------------- | ------------------- |
+| 3.26.0 as released, scanned 4 November  | 0                   |
 | 3.26.0 as released, scanned 20 November | 58, 23 of them high |
-| 3.28.1 as released | 2 |
-| 3.28.1 built here | 0 |
+| 3.28.1 as released                      | 2                   |
+| 3.28.1 built here                       | 0                   |
 
 The 58 are almost all in the standard library of Go 1.25.7. Taking a newer
 upstream release clears most of what accumulates -- which is the ordinary
